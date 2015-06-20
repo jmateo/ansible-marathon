@@ -41,11 +41,12 @@ EOF
 function marathon_apps {
   z="`curl -H "Accept: text/plain" -s "$1/v2/tasks"`"
 
-  frontend "$z"
+  frontend "$z" `echo "$1" | awk -F':' '{print $1}'`
   backend "$z"
 }
 
 function frontend {
+  local host="$2"
   cat <<EOF
 frontend http-in
   bind *:80
@@ -61,7 +62,7 @@ EOF
     set -- $REPLY
     local name="$1"
     cat <<EOF
-  acl host_${name} hdr_beg(host) -i ${name}
+  acl host_${name} hdr_beg(host) -i ${host}
   use_backend ${name}_cluster if host_${name}
 
 EOF
